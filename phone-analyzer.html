@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Performance Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .age-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-section {
+            margin-bottom: 30px;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .progress-bar {
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .progress-fill.degraded {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .progress-fill.good {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .progress-fill.excellent {
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .info-item span {
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .recommendation {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .recommendation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .recommendation ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .recommendation li {
+            margin-bottom: 8px;
+        }
+
+        .phone-info {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .phone-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-help {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Phone Performance Analyzer</h1>
+            <p>Analyze your phone's performance and battery health based on age</p>
+        </div>
+
+        <div class="content">
+            <form id="analyzerForm">
+                <div class="form-group">
+                    <label for="phoneBrand">Phone Brand</label>
+                    <select id="phoneBrand" required>
+                        <option value="">Select a brand...</option>
+                        <option value="Apple">Apple</option>
+                        <option value="Samsung">Samsung</option>
+                        <option value="Google">Google</option>
+                        <option value="OnePlus">OnePlus</option>
+                        <option value="Xiaomi">Xiaomi</option>
+                        <option value="Huawei">Huawei</option>
+                        <option value="Oppo">Oppo</option>
+                        <option value="Vivo">Vivo</option>
+                        <option value="Motorola">Motorola</option>
+                        <option value="Sony">Sony</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneModel">Phone Model</label>
+                    <select id="phoneModel" required disabled>
+                        <option value="">Select a brand first...</option>
+                    </select>
+                    <div class="search-help">Select your phone brand first, then choose your model</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Age</label>
+                    <div class="age-inputs">
+                        <div>
+                            <input type="number" id="ageYears" min="0" max="10" placeholder="Years" required>
+                        </div>
+                        <div>
+                            <input type="number" id="ageMonths" min="0" max="11" placeholder="Months (0-11)" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="usagePattern">Usage Pattern</label>
+                    <select id="usagePattern" required>
+                        <option value="light">Light (Basic calls, texts, browsing)</option>
+                        <option value="moderate">Moderate (Social media, photos, videos)</option>
+                        <option value="heavy">Heavy (Gaming, streaming, multitasking)</option>
+                    </select>
+                </div>
+
+                <button type="submit">Analyze Performance</button>
+            </form>
+
+            <div id="results" class="results">
+                <div class="phone-info">
+                    <h3>Device Information</h3>
+                    <div class="info-grid" id="phoneInfoGrid"></div>
+                </div>
+
+                <div class="result-section">
+                    <h3>Hardware Performance</h3>
+                    <div class="stat-card">
+                        <h4>Overall Performance Score</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="performanceBar"></div>
+                        </div>
+                        <p id="performanceText"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Processor Performance</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="processorBar"></div>
+                        </div>
+                        <p id="processorText"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Memory Performance</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="memoryBar"></div>
+                        </div>
+                        <p id="memoryText"></p>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3>Battery Health Analysis</h3>
+                    <div class="stat-card">
+                        <h4>Battery Capacity</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="batteryBar"></div>
+                        </div>
+                        <p id="batteryText"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Estimated Daily Usage Time</h4>
+                        <p id="usageTimeText" style="font-size: 1.2em; font-weight: 600; color: #667eea;"></p>
+                    </div>
+                </div>
+
+                <div id="recommendations" class="recommendation"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive phone database
+        const phoneDatabase = {
+            Apple: {
+                "iPhone 15 Pro Max": { year: 2023, processor: 98, ram: 8, battery: 4422, chipset: "A17 Pro" },
+                "iPhone 15 Pro": { year: 2023, processor: 98, ram: 8, battery: 3274, chipset: "A17 Pro" },
+                "iPhone 15": { year: 2023, processor: 95, ram: 6, battery: 3349, chipset: "A16 Bionic" },
+                "iPhone 14 Pro Max": { year: 2022, processor: 95, ram: 6, battery: 4323, chipset: "A16 Bionic" },
+                "iPhone 14 Pro": { year: 2022, processor: 95, ram: 6, battery: 3200, chipset: "A16 Bionic" },
+                "iPhone 14": { year: 2022, processor: 92, ram: 6, battery: 3279, chipset: "A15 Bionic" },
+                "iPhone 13 Pro Max": { year: 2021, processor: 92, ram: 6, battery: 4352, chipset: "A15 Bionic" },
+                "iPhone 13 Pro": { year: 2021, processor: 92, ram: 6, battery: 3095, chipset: "A15 Bionic" },
+                "iPhone 13": { year: 2021, processor: 90, ram: 4, battery: 3240, chipset: "A15 Bionic" },
+                "iPhone 12 Pro Max": { year: 2020, processor: 88, ram: 6, battery: 3687, chipset: "A14 Bionic" },
+                "iPhone 12": { year: 2020, processor: 85, ram: 4, battery: 2815, chipset: "A14 Bionic" },
+                "iPhone 11": { year: 2019, processor: 80, ram: 4, battery: 3110, chipset: "A13 Bionic" },
+                "iPhone SE (2022)": { year: 2022, processor: 92, ram: 4, battery: 2018, chipset: "A15 Bionic" },
+                "iPhone XR": { year: 2018, processor: 75, ram: 3, battery: 2942, chipset: "A12 Bionic" }
+            },
+            Samsung: {
+                "Galaxy S24 Ultra": { year: 2024, processor: 97, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 3" },
+                "Galaxy S24+": { year: 2024, processor: 96, ram: 12, battery: 4900, chipset: "Snapdragon 8 Gen 3" },
+                "Galaxy S24": { year: 2024, processor: 95, ram: 8, battery: 4000, chipset: "Snapdragon 8 Gen 3" },
+                "Galaxy S23 Ultra": { year: 2023, processor: 94, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 2" },
+                "Galaxy S23+": { year: 2023, processor: 93, ram: 8, battery: 4700, chipset: "Snapdragon 8 Gen 2" },
+                "Galaxy S23": { year: 2023, processor: 92, ram: 8, battery: 3900, chipset: "Snapdragon 8 Gen 2" },
+                "Galaxy S22 Ultra": { year: 2022, processor: 90, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 1" },
+                "Galaxy S22": { year: 2022, processor: 88, ram: 8, battery: 3700, chipset: "Snapdragon 8 Gen 1" },
+                "Galaxy S21 Ultra": { year: 2021, processor: 85, ram: 12, battery: 5000, chipset: "Snapdragon 888" },
+                "Galaxy S21": { year: 2021, processor: 83, ram: 8, battery: 4000, chipset: "Snapdragon 888" },
+                "Galaxy S20": { year: 2020, processor: 80, ram: 8, battery: 4000, chipset: "Snapdragon 865" },
+                "Galaxy A54": { year: 2023, processor: 78, ram: 8, battery: 5000, chipset: "Exynos 1380" },
+                "Galaxy A34": { year: 2023, processor: 72, ram: 6, battery: 5000, chipset: "Dimensity 1080" },
+                "Galaxy Z Fold 5": { year: 2023, processor: 94, ram: 12, battery: 4400, chipset: "Snapdragon 8 Gen 2" },
+                "Galaxy Z Flip 5": { year: 2023, processor: 93, ram: 8, battery: 3700, chipset: "Snapdragon 8 Gen 2" }
+            },
+            Google: {
+                "Pixel 8 Pro": { year: 2023, processor: 90, ram: 12, battery: 5050, chipset: "Google Tensor G3" },
+                "Pixel 8": { year: 2023, processor: 88, ram: 8, battery: 4575, chipset: "Google Tensor G3" },
+                "Pixel 7 Pro": { year: 2022, processor: 85, ram: 12, battery: 5000, chipset: "Google Tensor G2" },
+                "Pixel 7": { year: 2022, processor: 83, ram: 8, battery: 4355, chipset: "Google Tensor G2" },
+                "Pixel 6 Pro": { year: 2021, processor: 80, ram: 12, battery: 5003, chipset: "Google Tensor" },
+                "Pixel 6": { year: 2021, processor: 78, ram: 8, battery: 4614, chipset: "Google Tensor" },
+                "Pixel 5": { year: 2020, processor: 72, ram: 8, battery: 4080, chipset: "Snapdragon 765G" }
+            },
+            OnePlus: {
+                "OnePlus 12": { year: 2024, processor: 96, ram: 16, battery: 5400, chipset: "Snapdragon 8 Gen 3" },
+                "OnePlus 11": { year: 2023, processor: 93, ram: 16, battery: 5000, chipset: "Snapdragon 8 Gen 2" },
+                "OnePlus 10 Pro": { year: 2022, processor: 88, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 1" },
+                "OnePlus 9 Pro": { year: 2021, processor: 85, ram: 12, battery: 4500, chipset: "Snapdragon 888" },
+                "OnePlus 9": { year: 2021, processor: 83, ram: 8, battery: 4500, chipset: "Snapdragon 888" },
+                "OnePlus Nord 3": { year: 2023, processor: 80, ram: 16, battery: 5000, chipset: "Dimensity 9000" }
+            },
+            Xiaomi: {
+                "Xiaomi 14 Pro": { year: 2024, processor: 96, ram: 16, battery: 4880, chipset: "Snapdragon 8 Gen 3" },
+                "Xiaomi 13 Pro": { year: 2023, processor: 93, ram: 12, battery: 4820, chipset: "Snapdragon 8 Gen 2" },
+                "Xiaomi 13": { year: 2023, processor: 92, ram: 12, battery: 4500, chipset: "Snapdragon 8 Gen 2" },
+                "Xiaomi 12 Pro": { year: 2022, processor: 88, ram: 12, battery: 4600, chipset: "Snapdragon 8 Gen 1" },
+                "Redmi Note 13 Pro": { year: 2023, processor: 75, ram: 12, battery: 5100, chipset: "Snapdragon 7s Gen 2" },
+                "Poco F5 Pro": { year: 2023, processor: 85, ram: 12, battery: 5160, chipset: "Snapdragon 8+ Gen 1" }
+            },
+            Huawei: {
+                "Mate 60 Pro": { year: 2023, processor: 88, ram: 12, battery: 5000, chipset: "Kirin 9000s" },
+                "P60 Pro": { year: 2023, processor: 86, ram: 12, battery: 4815, chipset: "Snapdragon 8+ Gen 1" },
+                "Mate 50 Pro": { year: 2022, processor: 85, ram: 8, battery: 4700, chipset: "Snapdragon 8+ Gen 1" },
+                "P50 Pro": { year: 2021, processor: 82, ram: 8, battery: 4360, chipset: "Snapdragon 888" }
+            },
+            Oppo: {
+                "Find X7 Ultra": { year: 2024, processor: 96, ram: 16, battery: 5000, chipset: "Snapdragon 8 Gen 3" },
+                "Find X6 Pro": { year: 2023, processor: 92, ram: 16, battery: 5000, chipset: "Snapdragon 8 Gen 2" },
+                "Reno 11 Pro": { year: 2023, processor: 78, ram: 12, battery: 4700, chipset: "Dimensity 8200" },
+                "Find X5 Pro": { year: 2022, processor: 88, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 1" }
+            },
+            Vivo: {
+                "X100 Pro": { year: 2024, processor: 96, ram: 16, battery: 5400, chipset: "Dimensity 9300" },
+                "X90 Pro": { year: 2023, processor: 92, ram: 12, battery: 4870, chipset: "Dimensity 9200" },
+                "V29 Pro": { year: 2023, processor: 76, ram: 12, battery: 4600, chipset: "Dimensity 8200" },
+                "X80 Pro": { year: 2022, processor: 88, ram: 12, battery: 4700, chipset: "Snapdragon 8 Gen 1" }
+            },
+            Motorola: {
+                "Edge 40 Pro": { year: 2023, processor: 90, ram: 12, battery: 4600, chipset: "Snapdragon 8 Gen 2" },
+                "Edge 30 Ultra": { year: 2022, processor: 85, ram: 12, battery: 4610, chipset: "Snapdragon 8+ Gen 1" },
+                "Moto G84": { year: 2023, processor: 68, ram: 12, battery: 5000, chipset: "Snapdragon 695" }
+            },
+            Sony: {
+                "Xperia 1 V": { year: 2023, processor: 90, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 2" },
+                "Xperia 5 V": { year: 2023, processor: 88, ram: 8, battery: 5000, chipset: "Snapdragon 8 Gen 2" },
+                "Xperia 1 IV": { year: 2022, processor: 85, ram: 12, battery: 5000, chipset: "Snapdragon 8 Gen 1" }
+            }
+        };
+
+        // Form elements
+        const form = document.getElementById('analyzerForm');
+        const brandSelect = document.getElementById('phoneBrand');
+        const modelSelect = document.getElementById('phoneModel');
+        const ageYearsInput = document.getElementById('ageYears');
+        const ageMonthsInput = document.getElementById('ageMonths');
+        const usagePatternSelect = document.getElementById('usagePattern');
+        const resultsDiv = document.getElementById('results');
+
+        // Update model dropdown when brand changes
+        brandSelect.addEventListener('change', function() {
+            const brand = this.value;
+            modelSelect.innerHTML = '<option value="">Select a model...</option>';
+
+            if (brand && phoneDatabase[brand]) {
+                modelSelect.disabled = false;
+                const models = Object.keys(phoneDatabase[brand]).sort();
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+            } else {
+                modelSelect.disabled = true;
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            analyzePhone();
+        });
+
+        function analyzePhone() {
+            const brand = brandSelect.value;
+            const model = modelSelect.value;
+            const years = parseInt(ageYearsInput.value) || 0;
+            const months = parseInt(ageMonthsInput.value) || 0;
+            const usagePattern = usagePatternSelect.value;
+
+            const phoneData = phoneDatabase[brand][model];
+            const totalMonths = (years * 12) + months;
+
+            // Calculate current year to determine phone age
+            const currentYear = new Date().getFullYear();
+            const phoneAge = currentYear - phoneData.year;
+            const totalAge = phoneAge + (totalMonths / 12);
+
+            // Performance degradation calculation
+            const basePerformance = phoneData.processor;
+            const performanceDegradation = calculatePerformanceDegradation(totalAge, usagePattern);
+            const currentPerformance = Math.max(basePerformance * (1 - performanceDegradation), 20);
+
+            // Processor performance (degrades slower than overall)
+            const processorDegradation = calculatePerformanceDegradation(totalAge, usagePattern, 0.7);
+            const currentProcessor = Math.max(basePerformance * (1 - processorDegradation), 30);
+
+            // Memory performance (degrades faster due to fragmentation and app bloat)
+            const memoryDegradation = calculatePerformanceDegradation(totalAge, usagePattern, 1.3);
+            const currentMemory = Math.max((phoneData.ram / 16 * 100) * (1 - memoryDegradation), 15);
+
+            // Battery degradation calculation
+            const batteryHealth = calculateBatteryHealth(totalAge, usagePattern);
+            const currentBatteryCapacity = phoneData.battery * batteryHealth;
+
+            // Calculate estimated usage time based on battery and usage pattern
+            const usageTime = calculateUsageTime(currentBatteryCapacity, usagePattern);
+
+            // Display results
+            displayResults({
+                brand,
+                model,
+                phoneData,
+                totalAge,
+                currentPerformance,
+                currentProcessor,
+                currentMemory,
+                batteryHealth: batteryHealth * 100,
+                currentBatteryCapacity,
+                usageTime,
+                usagePattern
+            });
+        }
+
+        function calculatePerformanceDegradation(age, usagePattern, multiplier = 1) {
+            // Base degradation per year
+            let baseRate = 0.08; // 8% per year for moderate usage
+
+            if (usagePattern === 'light') baseRate = 0.05;
+            if (usagePattern === 'heavy') baseRate = 0.12;
+
+            // Apply multiplier for different components
+            baseRate *= multiplier;
+
+            // Exponential degradation (accelerates over time)
+            const degradation = 1 - Math.exp(-baseRate * age);
+            return Math.min(degradation, 0.8); // Cap at 80% degradation
+        }
+
+        function calculateBatteryHealth(age, usagePattern) {
+            // Battery degradation is more predictable
+            let cyclesPerYear = 365; // Assume one charge per day
+
+            if (usagePattern === 'light') cyclesPerYear = 250;
+            if (usagePattern === 'heavy') cyclesPerYear = 500;
+
+            const totalCycles = cyclesPerYear * age;
+
+            // Li-ion batteries lose ~20% capacity after 500 cycles
+            // Then degradation accelerates
+            let health;
+            if (totalCycles <= 500) {
+                health = 1 - (totalCycles / 500 * 0.20);
+            } else {
+                health = 0.80 - ((totalCycles - 500) / 1000 * 0.40);
+            }
+
+            return Math.max(health, 0.40); // Minimum 40% health
+        }
+
+        function calculateUsageTime(batteryCapacity, usagePattern) {
+            // Average power consumption (mAh per hour)
+            let powerConsumption;
+            if (usagePattern === 'light') powerConsumption = 200;
+            if (usagePattern === 'moderate') powerConsumption = 350;
+            if (usagePattern === 'heavy') powerConsumption = 550;
+
+            const hours = batteryCapacity / powerConsumption;
+            return hours;
+        }
+
+        function displayResults(data) {
+            // Phone info
+            const phoneInfoGrid = document.getElementById('phoneInfoGrid');
+            phoneInfoGrid.innerHTML = `
+                <div class="info-item">
+                    <strong>Chipset</strong>
+                    <span>${data.phoneData.chipset}</span>
+                </div>
+                <div class="info-item">
+                    <strong>RAM</strong>
+                    <span>${data.phoneData.ram} GB</span>
+                </div>
+                <div class="info-item">
+                    <strong>Original Battery</strong>
+                    <span>${data.phoneData.battery} mAh</span>
+                </div>
+                <div class="info-item">
+                    <strong>Release Year</strong>
+                    <span>${data.phoneData.year}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Phone Age</strong>
+                    <span>${data.totalAge.toFixed(1)} years</span>
+                </div>
+            `;
+
+            // Performance bars
+            updateProgressBar('performanceBar', data.currentPerformance,
+                `Current performance score: ${data.currentPerformance.toFixed(0)}/100`);
+            updateProgressBar('processorBar', data.currentProcessor,
+                `Processor operating at ${data.currentProcessor.toFixed(0)}% of original capacity`);
+            updateProgressBar('memoryBar', data.currentMemory,
+                `Memory efficiency: ${data.currentMemory.toFixed(0)}%`);
+
+            // Battery
+            updateProgressBar('batteryBar', data.batteryHealth,
+                `Battery health: ${data.batteryHealth.toFixed(0)}% (${data.currentBatteryCapacity.toFixed(0)} mAh remaining)`);
+
+            document.getElementById('usageTimeText').textContent =
+                `${data.usageTime.toFixed(1)} hours of ${data.usagePattern} usage per charge`;
+
+            // Recommendations
+            generateRecommendations(data);
+
+            // Show results
+            resultsDiv.classList.add('show');
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function updateProgressBar(id, value, text) {
+            const bar = document.getElementById(id);
+            const textElement = document.getElementById(id.replace('Bar', 'Text'));
+
+            // Determine color class
+            let colorClass = 'degraded';
+            if (value >= 80) colorClass = 'excellent';
+            else if (value >= 60) colorClass = 'good';
+
+            bar.className = `progress-fill ${colorClass}`;
+            bar.style.width = value + '%';
+            bar.textContent = Math.round(value) + '%';
+
+            if (textElement) {
+                textElement.textContent = text;
+            }
+        }
+
+        function generateRecommendations(data) {
+            const recommendations = [];
+
+            if (data.batteryHealth < 70) {
+                recommendations.push('Consider replacing your battery. Battery health below 70% significantly impacts daily usage.');
+            }
+            if (data.currentPerformance < 60) {
+                recommendations.push('Your phone is showing significant performance degradation. Consider upgrading to a newer model.');
+            }
+            if (data.currentMemory < 50) {
+                recommendations.push('Clear app cache and unnecessary data regularly to improve memory performance.');
+            }
+            if (data.usageTime < 6 && data.usagePattern === 'light') {
+                recommendations.push('Battery life is below optimal. Reduce background app refresh and lower screen brightness.');
+            }
+            if (data.totalAge > 4) {
+                recommendations.push('Your phone is over 4 years old. Security updates may be limited. Consider upgrading for better security.');
+            }
+            if (data.currentPerformance >= 80 && data.batteryHealth >= 80) {
+                recommendations.push('Your phone is in excellent condition! Continue with good maintenance practices.');
+            }
+            if (data.batteryHealth >= 70 && data.batteryHealth < 80) {
+                recommendations.push('Enable battery optimization features and avoid extreme temperatures to prolong battery life.');
+            }
+            if (data.currentProcessor < 70) {
+                recommendations.push('Close unused apps and limit widgets to reduce processor load.');
+            }
+
+            const recDiv = document.getElementById('recommendations');
+            if (recommendations.length > 0) {
+                recDiv.innerHTML = `
+                    <h4>💡 Recommendations</h4>
+                    <ul>
+                        ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
