@@ -300,7 +300,6 @@
                         <option value="">Select a brand first...</option>
                     </select>
                     <div class="search-help" id="modelHelp">Select your phone brand first, then choose your model</div>
-                    <button type="button" onclick="window.updateModels(); return false;" style="margin-top: 10px; padding: 8px 15px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 0.9em;">🔄 Refresh Models (Test Button)</button>
                 </div>
 
                 <div class="form-group">
@@ -379,12 +378,6 @@
     </div>
 
     <script>
-        // IMMEDIATE TEST - If you see an alert, JavaScript is working
-        alert('JavaScript loaded! Script is running.');
-
-        // Make sure updateModels is globally accessible
-        window.updateModels = null;
-
         // Comprehensive phone database
         const phoneDatabase = {
             Apple: {
@@ -483,11 +476,6 @@
         const ageMonthsInput = document.getElementById('ageMonths');
         const usagePatternSelect = document.getElementById('usagePattern');
         const resultsDiv = document.getElementById('results');
-
-        // Debug: Test if elements are found
-        if (!brandSelect || !modelSelect) {
-            alert('Error: Form elements not found. Please refresh the page.');
-        }
 
         // Function to update model dropdown (called by onchange and addEventListener)
         // Make it globally accessible for inline onchange handler
