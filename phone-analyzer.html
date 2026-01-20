@@ -279,7 +279,7 @@
             <form id="analyzerForm">
                 <div class="form-group">
                     <label for="phoneBrand">Phone Brand</label>
-                    <select id="phoneBrand" required>
+                    <select id="phoneBrand" required onchange="updateModels()">
                         <option value="">Select a brand...</option>
                         <option value="Apple">Apple</option>
                         <option value="Samsung">Samsung</option>
@@ -477,37 +477,55 @@
         const usagePatternSelect = document.getElementById('usagePattern');
         const resultsDiv = document.getElementById('results');
 
-        // Update model dropdown when brand changes
-        brandSelect.addEventListener('change', function() {
-            const brand = this.value;
+        // Debug: Test if elements are found
+        if (!brandSelect || !modelSelect) {
+            alert('Error: Form elements not found. Please refresh the page.');
+        }
+
+        // Function to update model dropdown (called by onchange and addEventListener)
+        function updateModels() {
+            const brand = brandSelect.value;
             const modelHelp = document.getElementById('modelHelp');
+
+            console.log('updateModels called for brand:', brand);
+
             modelSelect.innerHTML = '<option value="">Select a model...</option>';
 
             if (brand && phoneDatabase[brand]) {
                 modelSelect.disabled = false;
                 modelSelect.style.opacity = '1';
                 modelSelect.style.cursor = 'pointer';
+                modelSelect.style.background = 'white';
+
                 const models = Object.keys(phoneDatabase[brand]).sort();
                 console.log('Loading models for brand:', brand, 'Count:', models.length);
+
                 models.forEach(model => {
                     const option = document.createElement('option');
                     option.value = model;
                     option.textContent = model;
                     modelSelect.appendChild(option);
                 });
+
                 modelHelp.textContent = `✓ ${models.length} ${brand} models loaded. Tap to select your model.`;
                 modelHelp.style.color = '#43e97b';
                 modelHelp.style.fontWeight = '600';
+
                 console.log('Model dropdown enabled with', modelSelect.options.length - 1, 'models');
             } else {
                 modelSelect.disabled = true;
                 modelSelect.style.opacity = '0.5';
                 modelSelect.style.cursor = 'not-allowed';
+                modelSelect.style.background = '#f5f5f5';
+
                 modelHelp.textContent = 'Select your phone brand first, then choose your model';
                 modelHelp.style.color = '#666';
                 modelHelp.style.fontWeight = 'normal';
             }
-        });
+        }
+
+        // Also add event listener as backup
+        brandSelect.addEventListener('change', updateModels);
 
         // Form submission
         form.addEventListener('submit', function(e) {
