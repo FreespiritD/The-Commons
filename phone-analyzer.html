@@ -300,6 +300,7 @@
                         <option value="">Select a brand first...</option>
                     </select>
                     <div class="search-help" id="modelHelp">Select your phone brand first, then choose your model</div>
+                    <button type="button" onclick="window.updateModels(); return false;" style="margin-top: 10px; padding: 8px 15px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 0.9em;">🔄 Refresh Models (Test Button)</button>
                 </div>
 
                 <div class="form-group">
@@ -378,6 +379,9 @@
     </div>
 
     <script>
+        // Make sure updateModels is globally accessible
+        window.updateModels = null;
+
         // Comprehensive phone database
         const phoneDatabase = {
             Apple: {
@@ -483,49 +487,66 @@
         }
 
         // Function to update model dropdown (called by onchange and addEventListener)
-        function updateModels() {
-            const brand = brandSelect.value;
-            const modelHelp = document.getElementById('modelHelp');
+        // Make it globally accessible for inline onchange handler
+        window.updateModels = function() {
+            try {
+                const brand = brandSelect.value;
+                const modelHelp = document.getElementById('modelHelp');
 
-            console.log('updateModels called for brand:', brand);
+                console.log('updateModels called for brand:', brand);
 
-            modelSelect.innerHTML = '<option value="">Select a model...</option>';
+                modelSelect.innerHTML = '<option value="">Select a model...</option>';
 
-            if (brand && phoneDatabase[brand]) {
-                modelSelect.disabled = false;
-                modelSelect.style.opacity = '1';
-                modelSelect.style.cursor = 'pointer';
-                modelSelect.style.background = 'white';
+                if (brand && phoneDatabase[brand]) {
+                    modelSelect.disabled = false;
+                    modelSelect.style.opacity = '1';
+                    modelSelect.style.cursor = 'pointer';
+                    modelSelect.style.background = 'white';
 
-                const models = Object.keys(phoneDatabase[brand]).sort();
-                console.log('Loading models for brand:', brand, 'Count:', models.length);
+                    const models = Object.keys(phoneDatabase[brand]).sort();
+                    console.log('Loading models for brand:', brand, 'Count:', models.length);
 
-                models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model;
-                    option.textContent = model;
-                    modelSelect.appendChild(option);
-                });
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelect.appendChild(option);
+                    });
 
-                modelHelp.textContent = `✓ ${models.length} ${brand} models loaded. Tap to select your model.`;
-                modelHelp.style.color = '#43e97b';
-                modelHelp.style.fontWeight = '600';
+                    modelHelp.textContent = `✓ ${models.length} ${brand} models loaded. Tap to select your model.`;
+                    modelHelp.style.color = '#43e97b';
+                    modelHelp.style.fontWeight = '600';
 
-                console.log('Model dropdown enabled with', modelSelect.options.length - 1, 'models');
-            } else {
-                modelSelect.disabled = true;
-                modelSelect.style.opacity = '0.5';
-                modelSelect.style.cursor = 'not-allowed';
-                modelSelect.style.background = '#f5f5f5';
+                    console.log('Model dropdown enabled with', modelSelect.options.length - 1, 'models');
 
-                modelHelp.textContent = 'Select your phone brand first, then choose your model';
-                modelHelp.style.color = '#666';
-                modelHelp.style.fontWeight = 'normal';
+                    // Force a visual update
+                    modelSelect.setAttribute('data-loaded', 'true');
+                } else {
+                    modelSelect.disabled = true;
+                    modelSelect.style.opacity = '0.5';
+                    modelSelect.style.cursor = 'not-allowed';
+                    modelSelect.style.background = '#f5f5f5';
+
+                    modelHelp.textContent = 'Select your phone brand first, then choose your model';
+                    modelHelp.style.color = '#666';
+                    modelHelp.style.fontWeight = 'normal';
+
+                    modelSelect.removeAttribute('data-loaded');
+                }
+            } catch(error) {
+                console.error('Error in updateModels:', error);
+                alert('Error loading models: ' + error.message);
             }
-        }
+        };
 
         // Also add event listener as backup
-        brandSelect.addEventListener('change', updateModels);
+        brandSelect.addEventListener('change', window.updateModels);
+
+        // Log when script is ready
+        console.log('Phone analyzer script loaded successfully');
+        console.log('updateModels function available:', typeof window.updateModels);
+        console.log('Brand select element:', brandSelect);
+        console.log('Model select element:', modelSelect);
 
         // Form submission
         form.addEventListener('submit', function(e) {
