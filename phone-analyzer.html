@@ -299,7 +299,7 @@
                     <select id="phoneModel" required disabled>
                         <option value="">Select a brand first...</option>
                     </select>
-                    <div class="search-help">Select your phone brand first, then choose your model</div>
+                    <div class="search-help" id="modelHelp">Select your phone brand first, then choose your model</div>
                 </div>
 
                 <div class="form-group">
@@ -480,6 +480,7 @@
         // Update model dropdown when brand changes
         brandSelect.addEventListener('change', function() {
             const brand = this.value;
+            const modelHelp = document.getElementById('modelHelp');
             modelSelect.innerHTML = '<option value="">Select a model...</option>';
 
             if (brand && phoneDatabase[brand]) {
@@ -487,19 +488,24 @@
                 modelSelect.style.opacity = '1';
                 modelSelect.style.cursor = 'pointer';
                 const models = Object.keys(phoneDatabase[brand]).sort();
+                console.log('Loading models for brand:', brand, 'Count:', models.length);
                 models.forEach(model => {
                     const option = document.createElement('option');
                     option.value = model;
                     option.textContent = model;
                     modelSelect.appendChild(option);
                 });
-                // Force a reflow on mobile
-                modelSelect.blur();
-                setTimeout(() => modelSelect.focus(), 100);
+                modelHelp.textContent = `✓ ${models.length} ${brand} models loaded. Tap to select your model.`;
+                modelHelp.style.color = '#43e97b';
+                modelHelp.style.fontWeight = '600';
+                console.log('Model dropdown enabled with', modelSelect.options.length - 1, 'models');
             } else {
                 modelSelect.disabled = true;
                 modelSelect.style.opacity = '0.5';
                 modelSelect.style.cursor = 'not-allowed';
+                modelHelp.textContent = 'Select your phone brand first, then choose your model';
+                modelHelp.style.color = '#666';
+                modelHelp.style.fontWeight = 'normal';
             }
         });
 
